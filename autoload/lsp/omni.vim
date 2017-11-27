@@ -163,11 +163,11 @@ endfunction
 function! s:lua_format_completion_item(items) abort
 let result = []
 lua << EOF
-menus = vim.eval('s:kind_text_mappings')
-items = vim.eval('a:items')
-result = vim.eval('result')
+local menus = vim.eval('s:kind_text_mappings')
+local items = vim.eval('a:items')
+local result = vim.eval('result')
 for i = 0, #items - 1 do
-  x = vim.dict()
+  local x = vim.dict()
   x.word = items[i].label
   x.abbr = items[i].label
   if items[i].kind ~= nil and menus[items[i].kind] then x.menu = menus[items[i].kind] else x.menu = '' end
