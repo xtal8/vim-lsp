@@ -137,7 +137,11 @@ function! s:get_completion_result(data) abort
         let l:incomplete = l:result['isIncomplete']
     endif
 
-    let l:matches = map(l:items, {_, item -> s:format_completion_item(item) })
+    if has('lua')
+      let l:matches = s:lua_format_completion_item(l:items)
+    else
+      let l:matches = map(l:items, {_, item -> s:format_completion_item(item) })
+    endif
 
     return {'matches': l:matches, 'incomplete': l:incomplete}
 endfunction
@@ -153,6 +157,34 @@ function! s:format_completion_item(item) abort
     endif
 
     return l:comp
+endfunction
+
+
+function! s:lua_format_completion_item(items) abort
+let result = []
+lua << EOF
+menus = vim.eval('s:kind_text_mappings')
+items = vim.eval('a:items')
+result = vim.eval('result')
+for i = 0, #items - 1 do
+  x = vim.dict()
+  x.word = items[i].label
+  x.abbr = items[i].label
+  if items[i].kind ~= nil and menus[items[i].kind] then x.menu = menus[items[i].kind] else x.menu = '' end
+  x.icase = '1'
+  x.dup = '1'
+
+  if items[i].insertText ~= nil and items[i].insertText ~= '' then
+    x.word = items[i].insertText
+  end
+  if items[i].documentation ~= nil and items[i].documentation ~= '' then
+    x.info = items[i].documentation
+  end
+
+  result:add(x)
+end
+EOF
+return result
 endfunction
 
 " }}}
